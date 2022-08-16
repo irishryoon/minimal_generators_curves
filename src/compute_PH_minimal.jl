@@ -4,10 +4,8 @@ To use Gurobi, do the following before running this script:
 1. Download Gurobi and obtain a free academic license from 
 https://www.gurobi.com/academia/academic-program-and-licenses/
 
-2. Open a Julia REPL, and entire
-`julia> ENV["GUROBI_HOME"] = "/Library/gurobi912/mac64"` (or wherever Gurobi is downloaded)
-* In Iris's laptop, this is "/Library/gurobi912/mac64"
-* In Iris's Oxford machine, this is "gurobi952/linux64"
+2. Before running this script, open a Julia REPL, and enter
+`julia> ENV["GUROBI_HOME"] = PATH_TO_GUROBI` 
 
 written by Iris Yoon
 iris.hr.yoon@gmail.com
@@ -15,26 +13,21 @@ iris.hr.yoon@gmail.com
 module PH_minimal
 
 using Pkg
-ENV["GUROBI_HOME"] = "/Library/gurobi912/mac64"  # Iris's laptop
-#ENV["GUROBI_HOME"] = "~/Documents/gurobi952/linux64" # Iris's Oxford machine
 
 include("minimal_cycles_rational/installRequirements.jl")
-#include("minimal_cycles.jl")
 include("Eirene_var.jl")
-#using .Eirene_var
 using Plots
 using StatsBase
 using NPZ
 using Gurobi
 using Random
+using DataFrames
 using SparseArrays
-#using .minimal_cycles
-using NPZ
 using JSON
 using CSV
 using LinearAlgebra
-export compute_PH_minimal_generators
-export  chain_to_index,
+export compute_PH_minimal_generators,
+        chain_to_index,
         simplex_to_index,
         get_vertex_perm,
         check_homologous_cycles,
@@ -42,11 +35,12 @@ export  chain_to_index,
         select_odd_count,
         minimize_cycle_jumps,
         plot_barcode,
+        plot_curve,
         get_minimal_cycles_rational,
         get_jump_minimized_cycles,
-        plot_PD
+        plot_PD,
+        plot_cycle_3D
         
-    
 
 function get_cyclerep_in_C_epsilon(cyclerep, C_epsilon)
     cyclerep_v = [sort(cyclerep[:,j]) for j = 1:size(cyclerep, 2)]
@@ -54,8 +48,14 @@ function get_cyclerep_in_C_epsilon(cyclerep, C_epsilon)
     return cyclerep_Cepsilon
 end
 
-function plot_PL(P; title = "")
+function plot_curve(P; title = "")
     # P must have size (n, 3), where n is the number of points
+   # make sure the input has format (3, n_points)
+    if size(P,2) != 3
+        P = Array(Transpose(P))
+    end
+
+
     # plot P
     p = Plots.scatter3d(P[:,1], P[:,2], P[:,3], 
                 markersize = 0.5, markercolor = "grey", label = "",
@@ -80,7 +80,7 @@ function plot_PD(barcode;
 
     if size(barcode,1) == 0
         # plot diagonal line
-        p = plot([0, 1], [0, 1], 
+        p = Plots.plot([0, 1], [0, 1], 
         labels ="", 
         linewidth = diagonal_lw,
         framestyle = :box,
@@ -111,7 +111,7 @@ function plot_PD(barcode;
         
         min_birth = minimum(points[:,1]) * 0.8
         max_death = max_death * 1.1
-        plot!(p, [min_birth, max_death], [min_birth, max_death], 
+        Plots.plot!(p, [min_birth, max_death], [min_birth, max_death], 
             labels ="", 
             linewidth = diagonal_lw,
             framestyle = :box,
@@ -122,7 +122,7 @@ function plot_PD(barcode;
     else
         max_death = pd_max
         min_birth = pd_min
-        plot!(p, [min_birth, max_death], [min_birth, max_death], 
+        Plots.plot!(p, [min_birth, max_death], [min_birth, max_death], 
             labels ="", 
             linewidth = diagonal_lw,
             framestyle = :box,
@@ -148,6 +148,10 @@ end
 
 function plot_cycle_3D(P, cycle; title = "")
     # P must have size (n, 3), where n is the number of points
+     if size(P,2) != 3
+        P = Array(Transpose(P))
+    end
+
     # plot P
     p = Plots.scatter3d(P[:,1], P[:,2], P[:,3], 
                 markersize = 1, markercolor = "grey", label = "",
@@ -739,7 +743,8 @@ function get_jump_minimized_cycles(generators_v, C_barcode, pc)
 end
 
 
-
+"""compute_PH_minimal_generators(input_file, output_file)
+"""
 function compute_PH_minimal_generators(input_file, output_file)
     
     # check that input file ends with .npy
@@ -759,7 +764,7 @@ function compute_PH_minimal_generators(input_file, output_file)
     end
 
     if split(input_file, ".")[end] == "tsv"
-        pc = CSV.read(input_file)
+        pc = CSV.read(input_file, DataFrame)
         pc = Array(pc[!,["x", "y", "z"]])
     end
     
@@ -788,7 +793,7 @@ function compute_PH_minimal_generators(input_file, output_file)
     dic["representatives"] = representatives
     dic["non_Z2_coefficients"] = coefficients_problem
     #dic["generators"] = generators
-    #dic["generators_v"] = generators_v
+    dic["generators_v"] = generators_v
 
     open(output_file, "w") do io
         JSON.print(io, dic)

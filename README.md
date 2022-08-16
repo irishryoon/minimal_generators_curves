@@ -38,5 +38,6 @@ Given points in three dimensions, we first compute its persistent homology in di
 
 For details of the algorithm, we refer the user to <font color="red">ADD LINK TO hyperTDA paper.</font>
 
+
 ## Examples
 For visualizations of the minimal generators, please see the notebook `example/example.ipynb`.
