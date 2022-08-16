@@ -96,7 +96,7 @@ function plot_PD(barcode;
     
     # plot points with death < Inf
     idx2 = [i for i in 1:size(points,1) if i ∉ idx]
-    p = Plots.scatter(points[idx2,1], points[idx2,2]; kwargs..., color = "grey", labels = "", alpha = 0.5)
+    p = Plots.scatter(points[idx2,1], points[idx2,2]; kwargs..., color = "grey", labels = "", hover = idx2, alpha = 0.5)
     
     # find max death value
     max_death = maximum(points[idx2, 2])
@@ -104,7 +104,7 @@ function plot_PD(barcode;
     # plot points with death parameter == Inf
     death_plot = ones(size(idx,1)) * max_death
     
-    Plots.scatter!(p, points[idx,1], death_plot, aspect_ratio = :equal, legend=:bottomright, labels="", color ="red"; kwargs...)
+    Plots.scatter!(p, points[idx,1], death_plot, aspect_ratio = :equal, legend=:bottomright, hover = idx, labels="", color ="red"; kwargs...)
 
     # plot diagonal line
     if pd_max == nothing
