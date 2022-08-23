@@ -251,9 +251,8 @@ function plot_barcode(barcode;
     end
 end
 
-
+"""
 # given a cycle, find all two simplices that share a boundary 
-
 function sample_cyclereps(initial_cycle, n_difference, C_epsilon)
     cycle = copy(initial_cycle)
     differences = Set()
@@ -299,6 +298,8 @@ function sample_cyclereps(initial_cycle, n_difference, C_epsilon)
     return cycle, differences
 end
 
+
+
 function sample_multiple_cyclereps(initial_cycle, n_difference, C_epsilon, n_samples)
     sampled_cycles = Dict()
     sampled_differences = Dict()
@@ -311,7 +312,7 @@ function sample_multiple_cyclereps(initial_cycle, n_difference, C_epsilon, n_sam
     return sampled_cycles, sampled_differences
     
 end
-
+"""
 
 function chain_to_vertex(chain, C_epsilon; dim = 1)
     chain_v = [Eirene_var.incidentverts(C_epsilon["farfaces"],C_epsilon["firstv"],dim+1,[item]) for item in chain]
@@ -338,7 +339,6 @@ function find_adjacent_two_simplices(cycle, rv)
     end
     return two_simplices
 end
-
 
 
 # copy-pasted from Iris's extension method code
@@ -582,10 +582,8 @@ function cycle_list_vertices(cycle)
 end
     
 
-"""shorten_jumps
-Given a cycle (as a sorted list of vertices), decrease the amount of jumps present.
-
-WRITE BETTER EXPLANATION!!!!!1
+"""minimize_cycle_jumps
+Given a cycle, decrease the number of jumps between consecutive vertices.
 """
 function minimize_cycle_jumps(minimal_cycle, pc, epsilon)
     cycle_v = cycle_list_vertices(minimal_cycle)
@@ -631,7 +629,6 @@ end
 """minimize_jump
 Given a cycle (as a sorted list of vertices), minimize the jump between cycle[idx] and cycle[idx+1]
 """
-
 function minimize_jump(cycle_v, idx, C)
     start_v = cycle_v[idx]
     last_v = cycle_v[idx + 1]
@@ -648,7 +645,7 @@ function minimize_jump(cycle_v, idx, C)
         
         
         if test_idx != nothing
-            # check if test_chain is null homologous
+            # check if test_chain is null homologous (just have to check if the 2-simplex exists)
             homologous = check_homologous_cycles(test_idx, [], C)
             if homologous == true
                 return start_v + i, start_v, last_v
@@ -685,10 +682,11 @@ function get_minimal_cycles_rational(C)
         end
     end
     
+    # if there were coefficients other than +1 or -1, then re-run optimization over rationals while requiring integer solutions
     if coefficients_problem != []
        print("\nComputing minimal cycles over the rationals, requiring integer solutions")
        # re-run length minimization, this time requiring Integer solutions  
-       length_optimized = minimal_cycles.prsb_length_Edge(C; requireIntegralSol = true)
+       length_optimized = prsb_length_Edge(C; requireIntegralSol = true)
         # collect new generators
         generators = Dict()
         for i = 1:n_bars
@@ -704,6 +702,12 @@ function get_minimal_cycles_rational(C)
                     push!(coefficients_problem, i)
                 end
             end
+        end
+
+        # get vertex representations of the generator
+        generators_v = Dict()
+        for i = 1:n_bars
+            generators_v[i] = [C.permutedlverts[2][:,j] for j in generators[i]]
         end
         
         return generators, generators_v, coefficients_problem, length_optimized
@@ -744,8 +748,12 @@ end
 
 
 """compute_PH_minimal_generators(input_file, output_file)
+Computes persistent homology in dimension 1 and returns the minimal generators. 
+
+If `allow_nonbinary_coefficients` is set to true, then the support of the optimized cycle over the rational coefficients 
+
 """
-function compute_PH_minimal_generators(input_file, output_file)
+function compute_PH_minimal_generators(input_file, output_file; allow_nonbinary_coefficients = true)
     
     # check that input file ends with .npy
     if (split(input_file, ".")[end] != "npy") & (split(input_file, ".")[end] != "tsv")
@@ -779,24 +787,52 @@ function compute_PH_minimal_generators(input_file, output_file)
     # compute barcode
     C_barcode = permutedims(hcat(C.barCode[1]...))
 
-    # find minimal cycles (over rationals)
-    generators, generators_v, coefficients_problem, _ = get_minimal_cycles_rational(C)
+    # check that barcode is nonempty
+    if isempty(C_barcode) == true
+        print("\nBarcode is trivial")
+        dic = Dict()
+        dic["barcode"] = C_barcode
+        
 
-    # find jump-minimized cycles
-    minimized_generators = get_jump_minimized_cycles(generators_v, C_barcode, Array(transpose(pc)))
+        open(output_file, "w") do io
+            JSON.print(io, dic)
+        end
 
-    # save output
-    representatives = [minimized_generators[i] for i = 1:length(minimized_generators)]
+    else
+        # find minimal cycles (over rationals)
+        generators, generators_v, coefficients_problem, _ = get_minimal_cycles_rational(C)
 
-    dic = Dict()
-    dic["barcode"] = C_barcode
-    dic["representatives"] = representatives
-    dic["non_Z2_coefficients"] = coefficients_problem
-    #dic["generators"] = generators
-    dic["generators_v"] = generators_v
+        if (coefficients_problem == []) | (allow_nonbinary_coefficients == true)
+            # find jump-minimized cycles
+            minimized_generators = get_jump_minimized_cycles(generators_v, C_barcode, Array(transpose(pc)))
 
-    open(output_file, "w") do io
-        JSON.print(io, dic)
+            # save output
+            representatives = [minimized_generators[i] for i = 1:length(minimized_generators)]
+
+            dic = Dict()
+            dic["barcode"] = C_barcode
+            dic["representatives"] = representatives
+            dic["non_Z2_coefficients"] = coefficients_problem
+            dic["generators_rational"] = generators_v #these are the generators from optimizing over the rationals
+
+            open(output_file, "w") do io
+                JSON.print(io, dic)
+            end
+        # encountered problems with coefficients, and allow_nonbinary_coefficients is false
+        else
+            print("\nEncountered coefficients other than 0, 1, -1. User specified `allow_nonbinary_coefficients`` parameter to be false.")
+            print("\nNot computing jump-minimized generators.")
+            dic = Dict()
+            dic["barcode"] = C_barcode
+            dic["representatives"] = "not computed"
+            dic["non_Z2_coefficients"] = coefficients_problem
+            dic["generators_rational"] = generators_v #these are the generators from optimizing over the rationals
+
+            open(output_file, "w") do io
+                JSON.print(io, dic)
+            end
+
+        end
     end
 end
 
