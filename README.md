@@ -2,15 +2,6 @@
 Given points on a curve, computes the dimension-1 persistent homology and the minimal generators for each persistent homology class. 
 
 ## Install
-<font color="red">Do I need this? or the step-by-step below?</font>
-
-- `./install.sh`
-- Julia packages are installed to local environment in `./install.sh` but they 
-  can also be installed globally with `./install.jl --global`
-- configuring git (we need the following for parts of code that uses readchomp(`git root`)
-`git config --global alias.root "rev-parse --show-toplevel"`
-
-
 1. Download [Julia](https://julialang.org/downloads/).
 2. Download [Gurobi](https://www.gurobi.com/academia/academic-program-and-licenses/) and obtain a free academic license.
 
