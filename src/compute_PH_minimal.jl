@@ -14,7 +14,16 @@ module PH_minimal
 
 using Pkg
 
-include("minimal_cycles_rational/installRequirements.jl")
+#include("minimal_cycles_rational/installRequirements.jl")
+using SparseArrays
+using MultivariateStats,  Distances, DelimitedFiles, StatsBase, Distances, JuMP, JLD, LinearAlgebra, Eirene, SparseArrays, Random, Distributions, SparseArrays, Gurobi, GLPK
+include("minimal_cycles_rational/computePH.jl")
+include("minimal_cycles_rational/utilFunctions.jl")
+include("minimal_cycles_rational/edge-loss.jl")
+include("minimal_cycles_rational/triangle-loss.jl")
+include("minimal_cycles_rational/outputFunctions.jl")
+include("minimal_cycles_rational/find_sub_bdr_matrix.jl")
+
 include("Eirene_var.jl")
 using Plots
 using StatsBase
@@ -250,69 +259,6 @@ function plot_barcode(barcode;
         return p
     end
 end
-
-"""
-# given a cycle, find all two simplices that share a boundary 
-function sample_cyclereps(initial_cycle, n_difference, C_epsilon)
-    cycle = copy(initial_cycle)
-    differences = Set()
-    rv, cp = Eirene_var.boundarymatrix(C_epsilon, dim = 2)
-    for i=1:n_difference
-        # find all two simplices
-        two_simplices = find_adjacent_two_simplices(cycle, rv)
-     
-        # shuffle list of two simplices
-        two_simplices = shuffle(two_simplices)
-        j = 1
-        s = two_simplices[j]
-
-        # re-sample until we get a two-simplex that hasn't been sampled before
-        while (s in differences) & (j < length(two_simplices))
-            j = j+1
-            s = two_simplices[j]
-        end
-
-        # check if we iterated through all two_simplices
-        if (s in differences) & (j == length(two_simplices))
-            print("There are no more two-simplices to add.")
-            return cycle, differences
-        end
-
-
-        # find new cycle with added simplex
-        rv_idx = cp[s]
-        # get the three 1-simplices
-        one_simplex1 = rv[rv_idx]
-        one_simplex2 = rv[rv_idx+1]
-        one_simplex3 = rv[rv_idx+2]
-
-
-        # update cycle
-        cycle = vcat(cycle, [one_simplex1, one_simplex2, one_simplex3])
-        cycle = select_odd_count(cycle)
-
-        # update list of differences
-        push!(differences, s)
-
-    end
-    return cycle, differences
-end
-
-
-
-function sample_multiple_cyclereps(initial_cycle, n_difference, C_epsilon, n_samples)
-    sampled_cycles = Dict()
-    sampled_differences = Dict()
-    
-    for i=1:n_samples
-        alt_cycle, differences = sample_cyclereps(initial_cycle, n_difference, C_epsilon);
-        sampled_cycles[i] = alt_cycle
-        sampled_differences[i] = differences
-    end
-    return sampled_cycles, sampled_differences
-    
-end
-"""
 
 function chain_to_vertex(chain, C_epsilon; dim = 1)
     chain_v = [Eirene_var.incidentverts(C_epsilon["farfaces"],C_epsilon["firstv"],dim+1,[item]) for item in chain]
