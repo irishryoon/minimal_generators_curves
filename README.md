@@ -18,6 +18,12 @@ PH_minimal.compute_PH_minimal_generators(INPUT_PATH, OUTPUT_PATH)
 * `INPUT_PATH` must have extensions `tsv` or `npy`. Input must be an array of the x, y, z-coordinates of the points. Array must have size (n, 3) or (3,n), where `n` is the number of points
 * `OUTPUT_PATH` must have extension `json`.
 
+## Output
+The output file is a dictionary with the following keys:
+* `barcode`: barcode in dimension 1
+* `representatives`: minimal generators. This is the final output of the algorithm 
+* `non_Z2_coefficients`: indicates whether the function encountered generators with coefficients other than 0, 1, -1. 
+* `generators_rational`: length-minimal generators (after step 1 of Algorithm).
 
 ## Algorithm 
 Given points in three dimensions, we first compute its persistent homology in dimension 1. For each point in the persistence diagram, we compute its generator via the following:
