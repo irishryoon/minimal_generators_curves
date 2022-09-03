@@ -24,7 +24,7 @@ Given points in three dimensions, we first compute its persistent homology in di
 
 1. Find length-minimal generators with rational coefficients using [Li et al, 2021](https://github.com/TDAMinimalGeneratorResearch/minimal-generator) 
 	* In most cases, the generators will have coefficients in $\{ 0, 1, -1 \}$. We consider such generators as having coefficients in $\mathbb{F}_2$. Proceed to step 2.
-	* If the generator has coefficients other than $\{0, 1, -1\}$, we recompute the length-minimizing generators while requiring integer coefficients. Most generators will have coefficients in $\{ 0, 1, -1 \}$. We then consider such generators as having coefficients in $\mathbb{F}_$. Proceed to step 2.
+	* If the generator has coefficients other than $\{0, 1, -1\}$, we recompute the length-minimizing generators while requiring integer coefficients. Most generators will have coefficients in $\{ 0, 1, -1 \}$. We then consider such generators as having coefficients in $\mathbb{F}_2$. Proceed to step 2.
 	* If the generator still has coefficients other than $\{0, 1, -1\}$, then we consider the support of the generator (the collection of 1-simplices that have a non-zero coefficient) as the length-minimal generator. Proceed to step 2.
 		* To disable such handling of coefficients other than $\{0, 1, -1\}$, provide the argument `allow_nonbinary_coefficients = false` when calling the function `PH_minimal.compute_PH_minimal_generators()`. If the length-minimal generators have coefficients other than $\{0, 1, -1\}$, the function will print an error message and not proceed to step 2.
 2. Perform [jump-minimization](https://dl.acm.org/doi/pdf/10.4108/eai.3-12-2015.2262453) to find homologous generators with minimal amount of jumps between consecutive points. 
