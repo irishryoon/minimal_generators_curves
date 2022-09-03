@@ -29,8 +29,9 @@ Given points in three dimensions, we first compute its persistent homology in di
 		* To disable such handling of coefficients other than $\\{0, 1, -1\\}$, provide the argument `allow_nonbinary_coefficients = false` when calling the function `PH_minimal.compute_PH_minimal_generators()`. If the length-minimal generators have coefficients other than $\\{0, 1, -1\\}$, the function will print an error message and not proceed to step 2.
 2. Perform [jump-minimization](https://dl.acm.org/doi/pdf/10.4108/eai.3-12-2015.2262453) to find homologous generators with minimal amount of jumps between consecutive points. 
 
-For details of the algorithm, we refer the user to <font color="red">ADD LINK TO hyperTDA paper.</font>
-
+For details of the algorithm, we refer the user to ```diff
+ADD LINK TO hyperTDA paper.
+```
 
 ## Examples
 For visualizations of the minimal generators, please see the notebook `example/example.ipynb`.
