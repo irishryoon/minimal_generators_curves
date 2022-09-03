@@ -23,7 +23,7 @@ The output file is a dictionary with the following keys:
 * `barcode`: barcode in dimension 1
 * `representatives`: minimal generators. This is the final output of the algorithm 
 * `non_Z2_coefficients`: indicates whether the function encountered generators with coefficients other than 0, 1, -1. 
-* `generators_rational`: length-minimal generators (after step 1 of Algorithm).
+* `generators_rational`: length-minimal generators (after step 1 of algorithm).
 
 ## Algorithm 
 Given points in three dimensions, we first compute its persistent homology in dimension 1. For each point in the persistence diagram, we compute its generator via the following:
