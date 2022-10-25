@@ -21,7 +21,7 @@ PH_minimal.compute_PH_minimal_generators(INPUT_PATH, OUTPUT_PATH)
 * `INPUT_PATH` must have extensions `tsv` or `npy`. Input must be an array of the x, y, z-coordinates of the points. Array must have size (n, 3) or (3,n), where `n` is the number of points
 * `OUTPUT_PATH` must have extension `json`.
 * A typical "install" time (as measured by the time it takes for the `include` command to run): 2 minutes on a standard laptop. 
-* Expected runtime: On a random curve of 400 vertices (`example/random_curve.npy`), run time is 81 seconds on a standard laptop. 
+* Expected runtime: On a random curve of 200 vertices (`example/random_curve.npy`), run time is 81 seconds on a standard laptop. 
 
 ## Output
 The output file is a dictionary with the following keys:
