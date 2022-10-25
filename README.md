@@ -1,9 +1,12 @@
-# Minimal cycles for curves
+# Minimal generators for curves
 Given points on a curve, computes the dimension-1 persistent homology and the minimal generators for each persistent homology class. 
 
-## Install
-1. Download [Julia](https://julialang.org/downloads/).
-2. Download [Gurobi](https://www.gurobi.com/academia/academic-program-and-licenses/) and obtain a free academic license.
+## Requirements
+1. [Julia](https://julialang.org/downloads/) (tested on version 1.7.2)
+2. [Gurobi](https://www.gurobi.com/academia/academic-program-and-licenses/) (Can obtain a free academic license. Tested on version 9.5.2)
+
+### Julia requirements
+`Manifest.toml` file contains all Julia packages and their versions. The second line in the following quick start ensures that you install the correct packages. 
 
 ## Quick start
 
@@ -14,9 +17,11 @@ ENV["GUROBI_HOME"] = PATH_TO_GUROBI
 include("src/compute_PH_minimal.jl")
 PH_minimal.compute_PH_minimal_generators(INPUT_PATH, OUTPUT_PATH)
 ```
-* `PATH_TO_GUROBI`: For Mac, this is likely "/Library/gurobi912/mac64". This allows Julia to find Gurobi. 
+* `PATH_TO_GUROBI`: For Mac, this is likely "/Library/gurobi912/mac64", where the directory name of gurobi depends on the version. This allows Julia to find Gurobi. 
 * `INPUT_PATH` must have extensions `tsv` or `npy`. Input must be an array of the x, y, z-coordinates of the points. Array must have size (n, 3) or (3,n), where `n` is the number of points
 * `OUTPUT_PATH` must have extension `json`.
+* A typical "install" time (as measured by the time it takes for the `include` command to run): 2 minutes on a standard laptop. 
+* Expected runtime: On a random curve of 400 vertices (`example/random_curve.npy`), run time is 81 seconds on a standard laptop. 
 
 ## Output
 The output file is a dictionary with the following keys:
